@@ -14,7 +14,7 @@ ptr read_cdr(ptr p) {
     ASSERT(p.type == T_INPUT_PORT);
     int c = fgetc(p.port);
     while (isspace(c)) c = fgetc(p.port);
-    if (c == EOF) ASSERT(false);
+    if (c == EOF) ASSERT(false);  // unexpected EOF
     if (c == '.') {
         ptr cdr = read(p);
         do {
@@ -48,10 +48,12 @@ ptr read(ptr p) {
         if (c == '\\') {
             static char buf[BUFFER_SIZE];
             int pt = 0;
+            buf[pt++] = fgetc(p.port);
             while (!delim_p(c = fgetc(p.port))) {
                 if (pt >= BUFFER_SIZE - 1) ASSERT(false);
                 buf[pt++] = c;
             }
+            ungetc(c, p.port);
             buf[pt++] = 0;
             if (!strcmp(buf, "space")) {
                 return make_char(' ');
@@ -72,6 +74,10 @@ ptr read(ptr p) {
             pop_root();
             pop_root();
             return v;
+        } else if (c == 't') {
+            return make_bool(true);
+        } else if (c == 'f') {
+            return make_bool(false);
         }
         ASSERT(false);  // unknown object
     } else if (c == '.') {
@@ -144,6 +150,7 @@ ptr read(ptr p) {
         for (ll i = 0; i < pt; i++) vector_set(v, i, make_char(buf[i]));
         return v;
     } else {
+        ungetc(c, p.port);
         static char buf[BUFFER_SIZE];
         int pt = 0;
         while (!delim_p(c = fgetc(p.port))) {
@@ -151,6 +158,7 @@ ptr read(ptr p) {
             buf[pt++] = c;
         }
         buf[pt++] = 0;
+        ungetc(c, p.port);
         char *e;
         ld val = strtold(buf, &e);
         if (*e != '\0' || errno) return INTERN(buf);

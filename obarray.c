@@ -14,7 +14,7 @@ void obarray_node_init(ll p) {
 
 void obarray_init() {
     obarray = malloc(obarray_size * sizeof(trie_node));
-    obarray_node_init(obarray_root);
+    obarray_node_init(obarray_allocp++);
 }
 
 ll obarray_alloc() {

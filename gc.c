@@ -24,6 +24,10 @@ ptr gc_copy(ptr p) {
         case T_PRIMITIVE:
         case T_INPUT_PORT:
         case T_OUTPUT_PORT:
+        case T_NIL:
+        case T_BOOL:
+        case T_EOF:
+        case T_UNBOUND:
             return p;
         case T_CONS:
         case T_HASHTABLE:

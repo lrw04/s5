@@ -91,6 +91,12 @@ bool eq(ptr a, ptr b) {
         case T_INPUT_PORT:
         case T_OUTPUT_PORT:
             return a.port == b.port;
+        case T_BOOL:
+            return a.boolean == b.boolean;
+        case T_NIL:
+        case T_UNBOUND:
+        case T_EOF:
+            return true;
         default:
             ASSERT(false);
     }

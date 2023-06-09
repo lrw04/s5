@@ -36,6 +36,7 @@ void print(ptr p, ptr port) {
             for (ll u = p.index, i = n - 1; u; u = obarray[u].father, i--) {
                 s[i] = obarray[u].path;
             }
+            s[n] = 0;
             fprintf(port.port, "%s", s);
             free(s);
             break;
