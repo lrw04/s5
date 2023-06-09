@@ -128,7 +128,7 @@ ptr get_hash(ptr p, ptr k) {
         ptr h = cons_car(c);
         if (eq(cons_car(h), k)) return cons_cdr(h);
     }
-    return make_bool(false);
+    return unbound;
 }
 
 void set_hash(ptr p, ptr k, ptr v) {
@@ -146,6 +146,43 @@ void set_hash(ptr p, ptr k, ptr v) {
     pair = cons(k, v);
     ptr c = cons(pair, p);
     memory[p.index + hash(k)].p = c;
+}
+
+ptr proc_formals(ptr p) {
+    ASSERT(p.type == T_PROCEDURE || p.type == T_MACRO);
+    return memory[p.index].p;
+}
+
+ptr proc_body(ptr p) {
+    ASSERT(p.type == T_PROCEDURE || p.type == T_MACRO);
+    return memory[p.index + 1].p;
+}
+
+ptr proc_env(ptr p) {
+    ASSERT(p.type == T_PROCEDURE || p.type == T_MACRO);
+    return memory[p.index + 2].p;
+}
+
+ptr env_car(ptr p) {
+    ASSERT(p.type == T_ENVIRONMENT);
+    return memory[p.index].p;
+}
+
+ptr env_cdr(ptr p) {
+    ASSERT(p.type == T_ENVIRONMENT);
+    return memory[p.index + 1].p;
+}
+
+ptr vector_ref(ptr p, ll i) {
+    ASSERT(p.type == T_VECTOR);
+    ASSERT(0 <= i && i < p.size);
+    return memory[p.start + i].p;
+}
+
+void vector_set(ptr p, ll i, ptr v) {
+    ASSERT(p.type == T_VECTOR);
+    ASSERT(0 <= i && i < p.size);
+    memory[p.start + i].p = v;
 }
 
 int next_hash(int prev, byte cur) { return (prev * 256 + cur) % HASHTABLE_P; }
