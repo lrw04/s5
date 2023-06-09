@@ -99,6 +99,9 @@ ptr vector_ref(ptr p, ll i);
 void vector_set(ptr p, ll i, ptr v);
 bool vector_stringp(ptr p);
 
+ll list_length(ptr l);
+ptr list_to_vector(ptr l);
+
 int next_hash(int prev, byte cur);
 int hash(ptr p);
 

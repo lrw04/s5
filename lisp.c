@@ -192,6 +192,22 @@ bool vector_stringp(ptr p) {
     return true;
 }
 
+ll list_length(ptr l) {
+    ll ans = 0;
+    while (!eq(l, nil)) {
+        ans++;
+        l = cons_cdr(l);
+    }
+    return ans;
+}
+
+ptr list_to_vector(ptr l) {
+    ll len = list_length(l);
+    ptr v = make_vector(len);
+    for (ll i = 0; i < len; i++, l = cons_cdr(l)) vector_set(v, i, cons_car(l));
+    return v;
+}
+
 int next_hash(int prev, byte cur) { return (prev * 256 + cur) % HASHTABLE_P; }
 
 #define MAKE_HASH(T)                                                      \
