@@ -97,6 +97,7 @@ ptr env_cdr(ptr p);
 
 ptr vector_ref(ptr p, ll i);
 void vector_set(ptr p, ll i, ptr v);
+bool vector_stringp(ptr p);
 
 int next_hash(int prev, byte cur);
 int hash(ptr p);

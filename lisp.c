@@ -185,6 +185,13 @@ void vector_set(ptr p, ll i, ptr v) {
     memory[p.start + i].p = v;
 }
 
+bool vector_stringp(ptr p) {
+    ASSERT(p.type == T_VECTOR);
+    for (ll i = 0; i < p.size; i++)
+        if (memory[p.start + i].p.type != T_CHARACTER) return false;
+    return true;
+}
+
 int next_hash(int prev, byte cur) { return (prev * 256 + cur) % HASHTABLE_P; }
 
 #define MAKE_HASH(T)                                                      \

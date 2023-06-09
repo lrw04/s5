@@ -57,12 +57,27 @@ void print(ptr p, ptr port) {
             print_cdr(p, port);
             break;
         case T_VECTOR:
-            fprintf(port.port, "#(");
-            for (ll i = 0; i < p.size; i++) {
-                if (i) fprintf(port.port, " ");
-                print(vector_ref(p, i), port);
+            if (vector_stringp(p)) {
+                fprintf(port.port, "\"");
+                for (ll i = 0; i < p.size; i++) {
+                    char c = vector_ref(p, i).character;
+                    if (c == '\"') {
+                        fprintf(port.port, "\\\"");
+                    } else if (c == '\n') {
+                        fprintf(port.port, "\\n");
+                    } else {
+                        fprintf(port.port, "%c", c);
+                    }
+                }
+                fprintf(port.port, "\"");
+            } else {
+                fprintf(port.port, "#(");
+                for (ll i = 0; i < p.size; i++) {
+                    if (i) fprintf(port.port, " ");
+                    print(vector_ref(p, i), port);
+                }
+                fprintf(port.port, ")");
             }
-            fprintf(port.port, ")");
             break;
         case T_HASHTABLE:
             fprintf(port.port, "#<hashtable>");
