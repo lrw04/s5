@@ -123,8 +123,8 @@ ptr hashtable_at(ptr p, int h) {
 
 ptr get_hash(ptr p, ptr k) {
     ASSERT(p.type == T_HASHTABLE);
-    ptr p = hashtable_at(p, hash(k));
-    for (ptr c = p; !eq(c, nil); c = cons_cdr(c)) {
+    ptr l = hashtable_at(p, hash(k));
+    for (ptr c = l; !eq(c, nil); c = cons_cdr(c)) {
         ptr h = cons_car(c);
         if (eq(cons_car(h), k)) return cons_cdr(h);
     }
