@@ -60,6 +60,7 @@ ptr gc_copy(ptr p) {
         default:
             ASSERT(false);
     }
+    if (start >= memory_size) return p;
     if (memory[start].moved) {
         switch (p.type) {
             case T_CONS:
@@ -86,18 +87,17 @@ ptr gc_copy(ptr p) {
         case T_PROCEDURE:
         case T_MACRO:
             p.index = alloc_ptr;
+            alloc_ptr += size;
             return p;
         case T_VECTOR:
             p.start = alloc_ptr;
+            alloc_ptr += size;
             return p;
         default:
             ASSERT(false);
     }
-    alloc_ptr += size;
-    return p;
 }
 
-// TODO: relocate them to from_space.
 void gc_cycle() {
     // create to space
     memory = realloc(memory, 2 * memory_size * sizeof(obj));
@@ -122,6 +122,9 @@ void gc_cycle() {
             case T_PRIMITIVE:
             case T_INPUT_PORT:
             case T_OUTPUT_PORT:
+            case T_NIL:
+            case T_EOF:
+            case T_UNBOUND:
                 break;
             case T_CONS:
             case T_HASHTABLE:
@@ -147,7 +150,10 @@ ll gc_alloc(ll size) {
     while (alloc_ptr + size >= memory_size) memory_size *= 2;
     memory = realloc(memory, memory_size * sizeof(obj));
     ll p = alloc_ptr;
-    for (ll i = 0; i < size; i++) memory[p + i].moved = false;
+    for (ll i = 0; i < size; i++) {
+        memory[p + i].moved = false;
+        memory[p + i].p = nil;
+    }
     alloc_ptr += size;
     return p;
 }
@@ -194,7 +200,7 @@ ptr make_vector(ll size) {
 }
 
 void push_root(ptr *p) {
-    if (root_sp == root_size) {
+    if (root_sp >= root_size) {
         root_size *= 2;
         root_stack = realloc(root_stack, root_size * sizeof(ptr *));
     }

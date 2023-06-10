@@ -3,7 +3,7 @@
 
 #include "lisp.h"
 
-// #define ALWAYS_GC
+#define ALWAYS_GC
 
 void gc_init();
 
