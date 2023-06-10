@@ -2,8 +2,8 @@
 #include "obarray.h"
 #include "reader.h"
 #include "printer.h"
+#include "eval.h"
 
-// TODO: driver loop
 // TODO: evaluator
 
 int main() {

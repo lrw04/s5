@@ -70,7 +70,7 @@ ptr read(ptr p) {
             l = read_cdr(p);
             ptr v = nil;
             push_root(&v);
-            v = list_to_vector(l);
+            v = cons(INTERN("vector"), l);
             pop_root();
             pop_root();
             return v;

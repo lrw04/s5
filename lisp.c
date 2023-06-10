@@ -92,7 +92,7 @@ bool eq(ptr a, ptr b) {
         case T_OUTPUT_PORT:
             return a.port == b.port;
         case T_BOOL:
-            return a.boolean == b.boolean;
+            return (a.boolean && b.boolean) || ((!a.boolean) && (!b.boolean));
         case T_NIL:
         case T_UNBOUND:
         case T_EOF:
@@ -214,7 +214,17 @@ ptr list_to_vector(ptr l) {
     return v;
 }
 
-int next_hash(int prev, byte cur) { return (prev * 256 + cur) % HASHTABLE_P; }
+bool list_p(ptr l) {
+    while (!eq(l, nil)) {
+        if (l.type != T_CONS) return false;
+        l = cons_cdr(l);
+    }
+    return true;
+}
+
+int next_hash(int prev, byte cur) {
+    return (prev * 257 + cur + 1) % HASHTABLE_P;
+}
 
 #define MAKE_HASH(T)                                                      \
     int hash_##T(int prev, T cur) {                                       \
