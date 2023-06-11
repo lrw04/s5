@@ -30,7 +30,7 @@ ptr read_cdr(ptr p) {
     push_root(&cdr);
     car = read(p);
     cdr = read_cdr(p);
-    ptr l = cons(car, cdr);
+    ptr l = cons(&car, &cdr);
     pop_root();
     pop_root();
     return l;
@@ -70,7 +70,7 @@ ptr read(ptr p) {
             l = read_cdr(p);
             ptr v = nil;
             push_root(&v);
-            v = cons(INTERN("vector"), l);
+            v = cons(&vector, &l);
             pop_root();
             pop_root();
             return v;
@@ -86,13 +86,15 @@ ptr read(ptr p) {
         while (c != '\n' && c != EOF) c = fgetc(p.port);
         if (c != EOF) ungetc(c, p.port);
         return read(p);
+    } else if (c == ')') {
+        ASSERT(false);
     } else if (c == '\'') {
         ptr text = nil;
         push_root(&text);
         text = read(p);
-        ptr text_l = cons(text, nil);
+        ptr text_l = cons(&text, &nil);
         push_root(&text_l);
-        ptr quotation = cons(INTERN("quote"), text_l);
+        ptr quotation = cons(&quote, &text_l);
         pop_root();
         pop_root();
         return quotation;
@@ -100,9 +102,9 @@ ptr read(ptr p) {
         ptr text = nil;
         push_root(&text);
         text = read(p);
-        ptr text_l = cons(text, nil);
+        ptr text_l = cons(&text, &nil);
         push_root(&text_l);
-        ptr quotation = cons(INTERN("quasiquote"), text_l);
+        ptr quotation = cons(&quasiquote, &text_l);
         pop_root();
         pop_root();
         return quotation;
@@ -113,9 +115,9 @@ ptr read(ptr p) {
             ptr text = nil;
             push_root(&text);
             text = read(p);
-            ptr text_l = cons(text, nil);
+            ptr text_l = cons(&text, &nil);
             push_root(&text_l);
-            ptr quotation = cons(INTERN("unquote"), text_l);
+            ptr quotation = cons(&unquote, &text_l);
             pop_root();
             pop_root();
             return quotation;
@@ -123,9 +125,9 @@ ptr read(ptr p) {
         ptr text = nil;
         push_root(&text);
         text = read(p);
-        ptr text_l = cons(text, nil);
+        ptr text_l = cons(&text, &nil);
         push_root(&text_l);
-        ptr quotation = cons(INTERN("unquote-splice"), text_l);
+        ptr quotation = cons(&unquote_splice, &text_l);
         pop_root();
         pop_root();
         return quotation;

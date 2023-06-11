@@ -25,7 +25,7 @@ ptr evlis(ptr vs, ptr r) {
     push_root(&ev);
     evcar = eval(cons_car(vs), r);
     evcdr = evlis(cons_cdr(vs), r);
-    ev = cons(evcar, evcdr);
+    ev = cons(&evcar, &evcdr);
     pop_root();
     pop_root();
     pop_root();
@@ -103,13 +103,13 @@ eval_start:
         ASSERT(list_length(e) > 2);
         ptr formals = cons_car(cons_cdr(e));
         ptr body = cons_cdr(cons_cdr(e));
-        return make_proc(formals, body, r, T_PROCEDURE);
+        return make_proc(&formals,& body,& r, T_PROCEDURE);
     }
     if (eq(car, INTERN("syntax"))) {
         ASSERT(list_length(e) > 2);
         ptr formals = cons_car(cons_cdr(e));
         ptr body = cons_cdr(cons_cdr(e));
-        return make_proc(formals, body, r, T_MACRO);
+        return make_proc(&formals, &body, &r, T_MACRO);
     }
 
     // application

@@ -9,6 +9,10 @@
 int main() {
     obarray_init();
     gc_init();
+    ptr h = make_hash();
+    push_root(&h);
+    ptr env = make_env(&h, &nil);
+    push_root(&env);
 
     while (true) {
         printf("> ");
@@ -17,6 +21,7 @@ int main() {
         push_root(&p);
         p = read(make_input_port(stdin));
         if (eq(p, eof)) break;
+        p = eval(p, env);
         print(p, make_output_port(stdout));
         printf("\n");
         pop_root();

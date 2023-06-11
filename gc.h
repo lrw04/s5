@@ -7,10 +7,10 @@
 
 void gc_init();
 
-ptr cons(ptr car, ptr cdr);
+ptr cons(ptr *car, ptr *cdr);
 ptr make_hash();
-ptr make_proc(ptr formals, ptr body, ptr env, int type);
-ptr make_env(ptr car, ptr cdr);
+ptr make_proc(ptr *formals, ptr *body, ptr *env, int type);
+ptr make_env(ptr *car, ptr *cdr);
 ptr make_vector(ll size);
 
 extern ptr **root_stack;

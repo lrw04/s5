@@ -139,6 +139,31 @@ void gc_cycle() {
                 ASSERT(false);
         }
     }
+    for (ll i = 0; i < root_sp; i++) {
+        switch (root_stack[i]->type) {
+            case T_NUMBER:
+            case T_SYMBOL:
+            case T_CHARACTER:
+            case T_PRIMITIVE:
+            case T_INPUT_PORT:
+            case T_OUTPUT_PORT:
+            case T_NIL:
+            case T_EOF:
+            case T_UNBOUND:
+                break;
+            case T_CONS:
+            case T_HASHTABLE:
+            case T_PROCEDURE:
+            case T_MACRO:
+            case T_ENVIRONMENT:
+                root_stack[i]->index -= memory_size;
+                break;
+            case T_VECTOR:
+                root_stack[i]->start -= memory_size;
+            default:
+                ASSERT(false);
+        }
+    }
     memory = realloc(memory, memory_size * sizeof(obj));
 }
 
@@ -158,14 +183,14 @@ ll gc_alloc(ll size) {
     return p;
 }
 
-ptr cons(ptr car, ptr cdr) {
+ptr cons(ptr *car, ptr *cdr) {
     ptr p;
     p.type = T_CONS;
     p.index = gc_alloc(2);
-    cons_setcar(p, car);
-    cons_setcdr(p, cdr);
+    cons_setcar(p, *car);
+    cons_setcdr(p, *cdr);
     return p;
-}
+ }
 
 ptr make_hash() {
     ptr p;
@@ -175,17 +200,17 @@ ptr make_hash() {
     return p;
 }
 
-ptr make_proc(ptr formals, ptr body, ptr env, int type) {
+ptr make_proc(ptr *formals, ptr *body, ptr *env, int type) {
     ptr p;
     p.type = type;
     p.index = gc_alloc(3);
-    memory[p.index].p = formals;
-    memory[p.index + 1].p = body;
-    memory[p.index + 2].p = env;
+    memory[p.index].p = *formals;
+    memory[p.index + 1].p = *body;
+    memory[p.index + 2].p = *env;
     return p;
 }
 
-ptr make_env(ptr car, ptr cdr) {
+ptr make_env(ptr *car, ptr *cdr) {
     ptr p = cons(car, cdr);
     p.type = T_ENVIRONMENT;
     return p;

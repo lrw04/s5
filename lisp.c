@@ -4,6 +4,15 @@
 #include "obarray.h"
 #include "util.h"
 
+ptr eof;
+ptr nil;
+ptr unbound;
+ptr quote;
+ptr vector;
+ptr quasiquote;
+ptr unquote;
+ptr unquote_splice;
+
 ptr make_number(ld number) {
     ptr p;
     p.type = T_NUMBER;
@@ -149,8 +158,8 @@ void set_hash(ptr p, ptr k, ptr v) {
     }
     ptr pair = nil;
     push_root(&pair);
-    pair = cons(k, v);
-    ptr c = cons(pair, p);
+    pair = cons(&k, &v);
+    ptr c = cons(&pair, &p);
     memory[p.index + hash(k)].p = c;
 }
 
@@ -222,12 +231,12 @@ bool list_p(ptr l) {
     return true;
 }
 
-int next_hash(int prev, byte cur) {
+ll next_hash(ll prev, byte cur) {
     return (prev * 257 + cur + 1) % HASHTABLE_P;
 }
 
 #define MAKE_HASH(T)                                                      \
-    int hash_##T(int prev, T cur) {                                       \
+    ll hash_##T(ll prev, T cur) {                                       \
         byte c[sizeof(T)];                                                \
         memcpy(c, &cur, sizeof(T));                                       \
         for (int i = 0; i < sizeof(T); i++) prev = next_hash(prev, c[i]); \
@@ -241,15 +250,15 @@ MAKE_HASH(char)
 
 #undef MAKE_HASH
 
-int hash_port(int prev, FILE *cur) {
+ll hash_port(ll prev, FILE *cur) {
     byte c[sizeof(FILE *)];
     memcpy(c, &cur, sizeof(FILE *));
     for (int i = 0; i < sizeof(FILE *); i++) prev = next_hash(prev, c[i]);
     return prev;
 }
 
-int hash(ptr p) {
-    int h = 0;
+ll hash(ptr p) {
+    ll h = 0;
     h = hash_int(h, p.type);
     switch (p.type) {
         case T_NUMBER:
@@ -267,4 +276,15 @@ int hash(ptr p) {
             ASSERT(false);  // cannot hash pointers that might change after GC
                             // cycle
     }
+}
+
+void lisp_init() {
+    eof = make_eof();
+    nil = make_nil();
+    unbound = make_unbound();
+    quote = INTERN("quote");
+    vector = INTERN("vector");
+    quasiquote = INTERN("quasiquote");
+    unquote = INTERN("unquote");
+    unquote_splice = INTERN("unquote_splice");
 }

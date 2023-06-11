@@ -63,9 +63,17 @@ ptr make_eof();
 ptr make_nil();
 ptr make_unbound();
 
-#define eof (make_eof())
-#define nil (make_nil())
-#define unbound (make_unbound())
+extern ptr eof;
+extern ptr nil;
+extern ptr unbound;
+extern ptr quote;
+extern ptr vector;
+extern ptr quasiquote;
+extern ptr unquote;
+extern ptr unquote_splice;
+// #define eof (make_eof())
+// #define nil (make_nil())
+// #define unbound (make_unbound())
 
 bool eq(ptr a, ptr b);
 
@@ -103,7 +111,9 @@ ll list_length(ptr l);
 ptr list_to_vector(ptr l);
 bool list_p(ptr l);
 
-int next_hash(int prev, byte cur);
-int hash(ptr p);
+ll next_hash(ll prev, byte cur);
+ll hash(ptr p);
+
+void lisp_init();
 
 #endif
