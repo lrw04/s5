@@ -116,6 +116,23 @@ ptr p_char(ptr a, ptr r) {
     return make_bool(cons_car(a).type == T_CHARACTER);
 }
 
+ptr p_char_to_integer(ptr a, ptr r) {
+    ASSERT(list_length(a) == 1);
+    ptr p = cons_car(a);
+    ASSERT(p.type == T_CHARACTER);
+    return make_number(p.character);
+}
+
+ptr p_integer_to_char(ptr a, ptr r) {
+    ASSERT(list_length(a) == 1);
+    ptr p = cons_car(a);
+    ASSERT(p.type == T_NUMBER);
+    ld d = p.number;
+    ASSERT(floorl(d) == d);
+    ASSERT(0 <= d && d < 128);
+    return make_char(d);
+}
+
 ptr make_initial_environment() {
     ptr f = nil, e = nil;
     push_root(&f);

@@ -22,12 +22,15 @@ ptr p_symbol(ptr a, ptr r);
 ptr p_symbol_to_string(ptr a, ptr r);
 ptr p_string_to_symbol(ptr a, ptr r);
 ptr p_char(ptr a, ptr r);
+ptr p_char_to_integer(ptr a, ptr r);
+ptr p_integer_to_char(ptr a, ptr r);
 
 const static char *prim_name[] = {
-    "eq?",      "number?",        "integer?",       "not",
-    "boolean?", "pair?",          "cons",           "car",
-    "cdr",      "set-car!",       "set-cdr!",       "null?",
-    "symbol?",  "symbol->string", "string->symbol", "char?"};
+    "eq?",           "number?",        "integer?",       "not",
+    "boolean?",      "pair?",          "cons",           "car",
+    "cdr",           "set-car!",       "set-cdr!",       "null?",
+    "symbol?",       "symbol->string", "string->symbol", "char?",
+    "char->integer", "integer->char"};
 const static primitive_t prim_f[] = {p_eq,
                                      p_number,
                                      p_integer,
@@ -43,7 +46,9 @@ const static primitive_t prim_f[] = {p_eq,
                                      p_symbol,
                                      p_symbol_to_string,
                                      p_string_to_symbol,
-                                     p_char};
+                                     p_char,
+                                     p_char_to_integer,
+                                     p_integer_to_char};
 
 ptr make_initial_environment();
 
