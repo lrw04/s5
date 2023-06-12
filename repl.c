@@ -11,7 +11,7 @@ int main() {
     gc_init();
     ptr h = make_hash();
     push_root(&h);
-    ptr env = make_env(&h, &nil);
+    ptr env = make_env(h, nil);
     push_root(&env);
 
     while (true) {
@@ -25,6 +25,7 @@ int main() {
         print(p, make_output_port(stdout));
         printf("\n");
         pop_root();
+        printf("%lld\n", root_sp);
     }
     printf("\n");
     return 0;

@@ -1,14 +1,15 @@
 #include "gc.h"
 
 #include <stdlib.h>
+#include <signal.h>
 
 #include "util.h"
 
 obj *memory;
-ll memory_size = 1024, alloc_ptr = 0, scan_ptr;
+ll memory_size = 1, alloc_ptr = 0, scan_ptr;
 
 ptr **root_stack;
-ll root_size = 1024, root_sp = 0;
+ll root_size = 1, root_sp = 0;
 
 void gc_init() {
     memory = malloc(memory_size * sizeof(obj));
@@ -104,14 +105,18 @@ void gc_cycle() {
     alloc_ptr = memory_size;
     scan_ptr = memory_size;
     // copy non-garbage
-    for (ll i = 0; i < root_sp; i++) *root_stack[i] = gc_copy(*root_stack[i]);
+    for (ll i = 0; i < root_sp; i++) {
+        // printf("%d\n", root_stack[i]->type);
+        *root_stack[i] = gc_copy(*root_stack[i]);
+    }
     while (scan_ptr < alloc_ptr) {
         memory[scan_ptr].p = gc_copy(memory[scan_ptr].p);
         scan_ptr++;
     }
     // relocate
-    for (ll i = memory_size; i < alloc_ptr; i++)
+    for (ll i = memory_size; i < alloc_ptr; i++) {
         memory[i - memory_size] = memory[i];
+    }
     alloc_ptr -= memory_size;
     for (ll i = 0; i < alloc_ptr; i++) {
         ASSERT(!memory[i].moved);
@@ -125,6 +130,7 @@ void gc_cycle() {
             case T_NIL:
             case T_EOF:
             case T_UNBOUND:
+            case T_BOOL:
                 break;
             case T_CONS:
             case T_HASHTABLE:
@@ -150,6 +156,7 @@ void gc_cycle() {
             case T_NIL:
             case T_EOF:
             case T_UNBOUND:
+            case T_BOOL:
                 break;
             case T_CONS:
             case T_HASHTABLE:
@@ -172,8 +179,10 @@ ll gc_alloc(ll size) {
     gc_cycle();
 #endif
     if (alloc_ptr + size >= memory_size) gc_cycle();
-    while (alloc_ptr + size >= memory_size) memory_size *= 2;
-    memory = realloc(memory, memory_size * sizeof(obj));
+    while (alloc_ptr + size >= memory_size) {
+        memory_size *= 2;
+        memory = realloc(memory, memory_size * sizeof(obj));
+    }
     ll p = alloc_ptr;
     for (ll i = 0; i < size; i++) {
         memory[p + i].moved = false;
@@ -183,14 +192,18 @@ ll gc_alloc(ll size) {
     return p;
 }
 
-ptr cons(ptr *car, ptr *cdr) {
+ptr cons(ptr car, ptr cdr) {
+    push_root(&car);
+    push_root(&cdr);
     ptr p;
     p.type = T_CONS;
     p.index = gc_alloc(2);
-    cons_setcar(p, *car);
-    cons_setcdr(p, *cdr);
+    cons_setcar(p, car);
+    cons_setcdr(p, cdr);
+    pop_root();
+    pop_root();
     return p;
- }
+}
 
 ptr make_hash() {
     ptr p;
@@ -200,19 +213,29 @@ ptr make_hash() {
     return p;
 }
 
-ptr make_proc(ptr *formals, ptr *body, ptr *env, int type) {
+ptr make_proc(ptr formals, ptr body, ptr env, int type) {
+    push_root(&formals);
+    push_root(&body);
+    push_root(&env);
     ptr p;
     p.type = type;
     p.index = gc_alloc(3);
-    memory[p.index].p = *formals;
-    memory[p.index + 1].p = *body;
-    memory[p.index + 2].p = *env;
+    memory[p.index].p = formals;
+    memory[p.index + 1].p = body;
+    memory[p.index + 2].p = env;
+    pop_root();
+    pop_root();
+    pop_root();
     return p;
 }
 
-ptr make_env(ptr *car, ptr *cdr) {
+ptr make_env(ptr car, ptr cdr) {
+    push_root(&car);
+    push_root(&cdr);
     ptr p = cons(car, cdr);
     p.type = T_ENVIRONMENT;
+    pop_root();
+    pop_root();
     return p;
 }
 
@@ -229,6 +252,7 @@ void push_root(ptr *p) {
         root_size *= 2;
         root_stack = realloc(root_stack, root_size * sizeof(ptr *));
     }
+    // if (root_sp == 3) raise(SIGTRAP);
     root_stack[root_sp++] = p;
 }
 

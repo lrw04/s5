@@ -147,20 +147,30 @@ ptr get_hash(ptr p, ptr k) {
 }
 
 void set_hash(ptr p, ptr k, ptr v) {
+    push_root(&p);
+    push_root(&k);
+    push_root(&v);
     ASSERT(p.type == T_HASHTABLE);
     ptr l = hashtable_at(p, hash(k));
     for (ptr c = l; !eq(c, nil); c = cons_cdr(c)) {
         ptr h = cons_car(c);
         if (eq(cons_car(h), k)) {
             cons_setcdr(h, v);
+            pop_root();
+            pop_root();
+            pop_root();
             return;
         }
     }
     ptr pair = nil;
     push_root(&pair);
-    pair = cons(&k, &v);
-    ptr c = cons(&pair, &p);
+    pair = cons(k, v);
+    ptr c = cons(pair, p);
     memory[p.index + hash(k)].p = c;
+    pop_root();
+    pop_root();
+    pop_root();
+    pop_root();
 }
 
 ptr proc_formals(ptr p) {
@@ -216,13 +226,6 @@ ll list_length(ptr l) {
     return ans;
 }
 
-ptr list_to_vector(ptr l) {
-    ll len = list_length(l);
-    ptr v = make_vector(len);
-    for (ll i = 0; i < len; i++, l = cons_cdr(l)) vector_set(v, i, cons_car(l));
-    return v;
-}
-
 bool list_p(ptr l) {
     while (!eq(l, nil)) {
         if (l.type != T_CONS) return false;
@@ -231,12 +234,10 @@ bool list_p(ptr l) {
     return true;
 }
 
-ll next_hash(ll prev, byte cur) {
-    return (prev * 257 + cur + 1) % HASHTABLE_P;
-}
+ll next_hash(ll prev, byte cur) { return (prev * 257 + cur + 1) % HASHTABLE_P; }
 
 #define MAKE_HASH(T)                                                      \
-    ll hash_##T(ll prev, T cur) {                                       \
+    ll hash_##T(ll prev, T cur) {                                         \
         byte c[sizeof(T)];                                                \
         memcpy(c, &cur, sizeof(T));                                       \
         for (int i = 0; i < sizeof(T); i++) prev = next_hash(prev, c[i]); \

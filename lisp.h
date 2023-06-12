@@ -10,7 +10,7 @@ typedef int64_t ll;
 typedef long double ld;
 typedef uint8_t byte;
 
-#define HASHTABLE_P 19260817
+#define HASHTABLE_P 7
 
 enum val_type {
     T_NUMBER,
@@ -108,7 +108,6 @@ void vector_set(ptr p, ll i, ptr v);
 bool vector_stringp(ptr p);
 
 ll list_length(ptr l);
-ptr list_to_vector(ptr l);
 bool list_p(ptr l);
 
 ll next_hash(ll prev, byte cur);

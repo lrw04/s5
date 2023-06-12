@@ -18,6 +18,8 @@ ptr lookup(ptr r, ptr v) {
 }
 
 ptr evlis(ptr vs, ptr r) {
+    push_root(&vs);
+    push_root(&r);
     if (eq(vs, nil)) return nil;
     ptr evcar = nil, evcdr = nil, ev = nil;
     push_root(&evcar);
@@ -25,7 +27,9 @@ ptr evlis(ptr vs, ptr r) {
     push_root(&ev);
     evcar = eval(cons_car(vs), r);
     evcdr = evlis(cons_cdr(vs), r);
-    ev = cons(&evcar, &evcdr);
+    ev = cons(evcar, evcdr);
+    pop_root();
+    pop_root();
     pop_root();
     pop_root();
     pop_root();
@@ -33,6 +37,8 @@ ptr evlis(ptr vs, ptr r) {
 }
 
 ptr make_frame(ptr formals, ptr args) {
+    push_root(&formals);
+    push_root(&args);
     ptr f = nil;
     push_root(&f);
     f = make_hash();
@@ -48,18 +54,26 @@ ptr make_frame(ptr formals, ptr args) {
         }
     }
     pop_root();
+    pop_root();
+    pop_root();
     return f;
 }
 
 ptr eval(ptr e, ptr r) {
 eval_start:
-    ptr orig_r = r;
-    push_root(&orig_r);
+    push_root(&e);
+    push_root(&r);
     if (e.type != T_CONS) {
         ASSERT(!eq(e, nil));
-        if (e.type != T_SYMBOL) return e;
+        if (e.type != T_SYMBOL) {
+            pop_root();
+            pop_root();
+            return e;
+        }
         ptr p = lookup(r, e);
         ASSERT(!eq(p, unbound));
+        pop_root();
+        pop_root();
         return cons_cdr(p);
     }
     ASSERT(list_p(e));
@@ -67,11 +81,10 @@ eval_start:
     if (eq(car, INTERN("quote"))) {
         ASSERT(eq(cons_cdr(cons_cdr(e)), nil));
         pop_root();
+        pop_root();
         return cons_car(cons_cdr(e));
     }
     if (eq(car, INTERN("if"))) {
-        ptr p = nil;
-        push_root(&p);
         // (if cond conseq alt)
         // (if cond conseq)
         ASSERT(list_length(e) == 3 || list_length(e) == 4);
@@ -80,14 +93,18 @@ eval_start:
         ptr alternative = list_length(e) == 4
                               ? cons_car(cons_cdr(cons_cdr(cons_cdr(e))))
                               : make_bool(false);
-        ptr result = eval(condition, r);
+        ptr result = nil;
+        push_root(&result);
+        result = eval(condition, r);
         pop_root();
         pop_root();
         if (eq(result, make_bool(false))) {
             e = alternative;
+            pop_root();
             goto eval_start;
         }
         e = consequence;
+        pop_root();
         goto eval_start;
     }
     if (eq(car, INTERN("set!"))) {
@@ -97,21 +114,32 @@ eval_start:
             val = eval(cons_car(cons_cdr(cons_cdr(e))), r);
         ptr p = lookup(r, var);
         set_hash(env_car(r), var, val);
+        pop_root();
+        pop_root();
         return var;
     }
     if (eq(car, INTERN("lambda"))) {
         ASSERT(list_length(e) > 2);
         ptr formals = cons_car(cons_cdr(e));
         ptr body = cons_cdr(cons_cdr(e));
-        return make_proc(&formals,& body,& r, T_PROCEDURE);
+        pop_root();
+        pop_root();
+        return make_proc(formals, body, r, T_PROCEDURE);
     }
     if (eq(car, INTERN("syntax"))) {
         ASSERT(list_length(e) > 2);
         ptr formals = cons_car(cons_cdr(e));
         ptr body = cons_cdr(cons_cdr(e));
-        return make_proc(&formals, &body, &r, T_MACRO);
+        pop_root();
+        pop_root();
+        return make_proc(formals, body, r, T_MACRO);
+    }
+    if (eq(car, INTERN("begin"))) {
+        ptr body = cons_cdr(e);
+        pop_root();
+        pop_root();
+        if (eq(body, nil)) return nil;
     }
 
     // application
-    
 }
