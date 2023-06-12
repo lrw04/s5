@@ -10,7 +10,7 @@ typedef int64_t ll;
 typedef long double ld;
 typedef uint8_t byte;
 
-#define HASHTABLE_P 7
+#define HASHTABLE_P 19260817
 
 enum val_type {
     T_NUMBER,

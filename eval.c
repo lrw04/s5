@@ -1,6 +1,7 @@
 #include "eval.h"
 
 #include "gc.h"
+#include "printer.h"
 #include "util.h"
 
 ptr lookup(ptr r, ptr v) {
@@ -136,9 +137,17 @@ eval_start:
     }
     if (eq(car, INTERN("begin"))) {
         ptr body = cons_cdr(e);
+        push_root(&body);
+        ASSERT(list_length(body));
+        while (!eq(cons_cdr(body), nil)) {
+            eval(cons_car(body), r);
+            body = cons_cdr(body);
+        }
+        e = cons_car(body);
         pop_root();
         pop_root();
-        if (eq(body, nil)) return nil;
+        pop_root();
+        goto eval_start;
     }
 
     // application

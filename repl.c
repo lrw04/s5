@@ -25,7 +25,7 @@ int main() {
         print(p, make_output_port(stdout));
         printf("\n");
         pop_root();
-        printf("%lld\n", root_sp);
+        // printf("%lld\n", root_sp);
     }
     printf("\n");
     return 0;
