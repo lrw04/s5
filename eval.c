@@ -3,6 +3,7 @@
 #include "gc.h"
 #include "printer.h"
 #include "util.h"
+#include "primitives.h"
 
 ptr lookup(ptr r, ptr v) {
     if (eq(r, nil)) return unbound;
@@ -48,11 +49,6 @@ ptr make_frame(ptr formals, ptr args) {
     ptr f = nil;
     push_root(&f);
     f = make_hash();
-    fprintf(stderr, "set: ");
-    print(formals, make_output_port(stderr));
-    fprintf(stderr, " to ");
-    print(args, make_output_port(stderr));
-    fprintf(stderr, "\n");
     while (!eq(formals, nil)) {
         if (formals.type == T_SYMBOL) {
             set_hash(f, formals, args);
@@ -196,18 +192,18 @@ eval_start:
     }
 
     // application
-    ptr func = nil, args = nil, frame = nil;
+    ptr func = nil, args = nil, frame = nil, body = nil;
     push_root(&func);
     push_root(&args);
     push_root(&frame);
+    push_root(&body);
     func = eval(car, r);
     switch (func.type) {
         case T_PROCEDURE:
             args = evlis(cons_cdr(e), r);
             frame = make_frame(proc_formals(func), args);
-            r = make_env(frame, r);
-            ptr body = proc_body(func);
-            push_root(&body);
+            r = make_env(frame, proc_env(func));
+            body = proc_body(func);
             ASSERT(list_length(body));
             while (!eq(cons_cdr(body), nil)) {
                 eval(cons_car(body), r);
@@ -223,20 +219,41 @@ eval_start:
             goto eval_start;
             break;
         case T_MACRO:
+            args = cons_cdr(e);
+            frame = make_frame(proc_formals(func), args);
+            ptr orig_env = r;
+            push_root(&orig_env);
+            r = make_env(frame, proc_env(func));
+            body = proc_body(func);
+            push_root(&body);
+            ASSERT(list_length(body));
+            ptr res = nil;
+            push_root(&res);
+            while (!eq(body, nil)) {
+                res = eval(cons_car(body), r);
+                body = cons_cdr(body);
+            }
+            e = res;
+            r = orig_env;
             pop_root();
             pop_root();
             pop_root();
             pop_root();
             pop_root();
-            return nil;
+            pop_root();
+            pop_root();
+            pop_root();
+            pop_root();
+            goto eval_start;
             break;
         case T_PRIMITIVE:
+            args = evlis(cons_cdr(e), r);
             pop_root();
             pop_root();
             pop_root();
             pop_root();
             pop_root();
-            return nil;
+            return prim_f[func.index](args, r);
             break;
         default:
             ASSERT(false);

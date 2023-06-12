@@ -127,7 +127,7 @@ ptr read(ptr p) {
         text = read(p);
         ptr text_l = cons(text, nil);
         push_root(&text_l);
-        ptr quotation = cons(INTERN("unquote-splice"), text_l);
+        ptr quotation = cons(INTERN("unquote-splicing"), text_l);
         pop_root();
         pop_root();
         return quotation;

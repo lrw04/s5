@@ -3,13 +3,12 @@
 #include "reader.h"
 #include "printer.h"
 #include "eval.h"
+#include "primitives.h"
 
 int main() {
     obarray_init();
     gc_init();
-    ptr h = make_hash();
-    push_root(&h);
-    ptr env = make_env(h, nil);
+    ptr env = make_initial_environment();
     push_root(&env);
 
     while (true) {
@@ -23,7 +22,7 @@ int main() {
         print(p, make_output_port(stdout));
         printf("\n");
         pop_root();
-        printf("%lld\n", root_sp);
+        // printf("%lld\n", root_sp);
     }
     printf("\n");
     return 0;
