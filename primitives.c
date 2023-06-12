@@ -133,6 +133,52 @@ ptr p_integer_to_char(ptr a, ptr r) {
     return make_char(d);
 }
 
+ptr p_vector(ptr a, ptr r) {
+    ASSERT(list_length(a) == 1);
+    return make_bool(cons_car(a).type == T_VECTOR);
+}
+
+ptr p_make_vector(ptr a, ptr r) {
+    push_root(&a);
+    push_root(&r);
+    ASSERT(list_length(a) && list_length(a) <= 2);
+    ASSERT(cons_car(a).type == T_NUMBER);
+    ll k = cons_car(a).number;
+    ptr v = list_length(a) > 1 ? cons_car(cons_cdr(a)) : nil;
+    ptr p = nil;
+    push_root(&p);
+    p = make_vector(k);
+    for (ll i = 0; i < k; i++) vector_set(p, i, v);
+    pop_root();
+    pop_root();
+    pop_root();
+    return p;
+}
+
+ptr p_vector_length(ptr a, ptr r) {
+    ASSERT(list_length(a) == 1);
+    ASSERT(cons_car(a).type == T_VECTOR);
+    return make_number(cons_car(a).size);
+}
+
+ptr p_vector_ref(ptr a, ptr r) {
+    ASSERT(list_length(a) == 2);
+    ptr v = cons_car(a), k = cons_car(cons_cdr(a));
+    ASSERT(v.type == T_VECTOR);
+    ASSERT(k.type == T_NUMBER);
+    return vector_ref(v, k.number);
+}
+
+ptr p_vector_set(ptr a, ptr r) {
+    ASSERT(list_length(a) == 3);
+    ptr v = cons_car(a), k = cons_car(cons_cdr(a)),
+        p = cons_car(cons_cdr(cons_cdr(a)));
+    ASSERT(v.type == T_VECTOR);
+    ASSERT(k.type == T_NUMBER);
+    vector_set(v, k.number, p);
+    return INTERN("vector-set!");
+}
+
 ptr make_initial_environment() {
     ptr f = nil, e = nil;
     push_root(&f);
