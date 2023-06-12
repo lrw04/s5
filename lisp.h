@@ -10,7 +10,7 @@ typedef int64_t ll;
 typedef long double ld;
 typedef uint8_t byte;
 
-#define HASHTABLE_P 19260817
+#define HASHTABLE_P 10007
 
 enum val_type {
     T_NUMBER,
@@ -32,7 +32,7 @@ enum val_type {
 };
 
 typedef struct ptr {
-    int type;
+    enum val_type type;
     union {
         // number
         ld number;
@@ -63,17 +63,17 @@ ptr make_eof();
 ptr make_nil();
 ptr make_unbound();
 
-extern ptr eof;
-extern ptr nil;
-extern ptr unbound;
-extern ptr quote;
-extern ptr vector;
-extern ptr quasiquote;
-extern ptr unquote;
-extern ptr unquote_splice;
-// #define eof (make_eof())
-// #define nil (make_nil())
-// #define unbound (make_unbound())
+// extern ptr eof;
+// extern ptr nil;
+// extern ptr unbound;
+// extern ptr quote;
+// extern ptr vector;
+// extern ptr quasiquote;
+// extern ptr unquote;
+// extern ptr unquote_splice;
+#define eof (make_eof())
+#define nil (make_nil())
+#define unbound (make_unbound())
 
 bool eq(ptr a, ptr b);
 
@@ -112,7 +112,5 @@ bool list_p(ptr l);
 
 ll next_hash(ll prev, byte cur);
 ll hash(ptr p);
-
-void lisp_init();
 
 #endif

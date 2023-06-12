@@ -278,14 +278,3 @@ ll hash(ptr p) {
                             // cycle
     }
 }
-
-void lisp_init() {
-    eof = make_eof();
-    nil = make_nil();
-    unbound = make_unbound();
-    quote = INTERN("quote");
-    vector = INTERN("vector");
-    quasiquote = INTERN("quasiquote");
-    unquote = INTERN("unquote");
-    unquote_splice = INTERN("unquote_splice");
-}

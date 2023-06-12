@@ -19,9 +19,14 @@ ptr lookup(ptr r, ptr v) {
 }
 
 ptr evlis(ptr vs, ptr r) {
+    ASSERT(vs.type == T_CONS || vs.type == T_NIL);
     push_root(&vs);
     push_root(&r);
-    if (eq(vs, nil)) return nil;
+    if (eq(vs, nil)) {
+        pop_root();
+        pop_root();
+        return nil;
+    }
     ptr evcar = nil, evcdr = nil, ev = nil;
     push_root(&evcar);
     push_root(&evcdr);
@@ -43,9 +48,15 @@ ptr make_frame(ptr formals, ptr args) {
     ptr f = nil;
     push_root(&f);
     f = make_hash();
+    fprintf(stderr, "set: ");
+    print(formals, make_output_port(stderr));
+    fprintf(stderr, " to ");
+    print(args, make_output_port(stderr));
+    fprintf(stderr, "\n");
     while (!eq(formals, nil)) {
         if (formals.type == T_SYMBOL) {
             set_hash(f, formals, args);
+            args = nil;
             break;
         } else {
             ASSERT(cons_car(formals).type == T_SYMBOL);
@@ -54,11 +65,45 @@ ptr make_frame(ptr formals, ptr args) {
             args = cons_cdr(args);
         }
     }
+    ASSERT(eq(args, nil));
     pop_root();
     pop_root();
     pop_root();
     return f;
 }
+
+// enum trampoline_state {
+//     S_EVAL,
+//     S_RESUME,
+//     S_APPLY,
+// };
+
+// // trampoline:
+// // eval(e, r, k) -> trampoline(S_EVAL, e, r, k);
+// // resume(k, v) -> trampoline(S_RESUME, k, v, nil);
+// // apply(f, args, k) -> trampoline(S_APPLY, f, args, k);
+
+// ptr trampoline(enum trampoline_state func, ptr arg1, ptr arg2, ptr arg3) {
+//     push_root(&arg1);
+//     push_root(&arg2);
+//     push_root(&arg3);
+//     while (true) {
+//         switch (func) {
+//             case S_EVAL:
+//                 ptr *e = &arg1, *r = &arg2, *k = &arg3;
+//                 if (e->type != T_CONS) {
+//                     ASSERT(!eq(*e, nil));
+//                     if (e->type != T_SYMBOL) {
+//                         pop_root();
+//                         pop_root();
+//                         pop_root();
+//                         return *e;
+//                     }
+
+//                 }
+//         }
+//     }
+// }
 
 ptr eval(ptr e, ptr r) {
 eval_start:
@@ -151,4 +196,49 @@ eval_start:
     }
 
     // application
+    ptr func = nil, args = nil, frame = nil;
+    push_root(&func);
+    push_root(&args);
+    push_root(&frame);
+    func = eval(car, r);
+    switch (func.type) {
+        case T_PROCEDURE:
+            args = evlis(cons_cdr(e), r);
+            frame = make_frame(proc_formals(func), args);
+            r = make_env(frame, r);
+            ptr body = proc_body(func);
+            push_root(&body);
+            ASSERT(list_length(body));
+            while (!eq(cons_cdr(body), nil)) {
+                eval(cons_car(body), r);
+                body = cons_cdr(body);
+            }
+            e = cons_car(body);
+            pop_root();
+            pop_root();
+            pop_root();
+            pop_root();
+            pop_root();
+            pop_root();
+            goto eval_start;
+            break;
+        case T_MACRO:
+            pop_root();
+            pop_root();
+            pop_root();
+            pop_root();
+            pop_root();
+            return nil;
+            break;
+        case T_PRIMITIVE:
+            pop_root();
+            pop_root();
+            pop_root();
+            pop_root();
+            pop_root();
+            return nil;
+            break;
+        default:
+            ASSERT(false);
+    }
 }
