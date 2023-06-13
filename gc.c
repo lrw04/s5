@@ -1,7 +1,7 @@
 #include "gc.h"
 
-#include <stdlib.h>
 #include <signal.h>
+#include <stdlib.h>
 
 #include "util.h"
 
@@ -200,8 +200,7 @@ ptr cons(ptr car, ptr cdr) {
     p.index = gc_alloc(2);
     cons_setcar(p, car);
     cons_setcdr(p, cdr);
-    pop_root();
-    pop_root();
+    pop_root_n(2);
     return p;
 }
 
@@ -223,9 +222,7 @@ ptr make_proc(ptr formals, ptr body, ptr env, int type) {
     memory[p.index].p = formals;
     memory[p.index + 1].p = body;
     memory[p.index + 2].p = env;
-    pop_root();
-    pop_root();
-    pop_root();
+    pop_root_n(3);
     return p;
 }
 
@@ -234,8 +231,7 @@ ptr make_env(ptr car, ptr cdr) {
     push_root(&cdr);
     ptr p = cons(car, cdr);
     p.type = T_ENVIRONMENT;
-    pop_root();
-    pop_root();
+    pop_root_n(2);
     return p;
 }
 
@@ -259,4 +255,8 @@ void push_root(ptr *p) {
 void pop_root() {
     ASSERT(root_sp);
     root_sp--;
+}
+
+void pop_root_n(ll n) {
+    for (ll i = 0; i < n; i++) pop_root();
 }

@@ -3,6 +3,9 @@
 #include "gc.h"
 #include "obarray.h"
 #include "util.h"
+#include "printer.h"
+
+#include <stdio.h>
 
 ptr eof;
 ptr nil;
@@ -131,7 +134,7 @@ void cons_setcdr(ptr p, ptr cdr) {
     memory[p.index + 1].p = cdr;
 }
 
-ptr hashtable_at(ptr p, int h) {
+ptr hashtable_at(ptr p, ll h) {
     ASSERT(p.type == T_HASHTABLE);
     return memory[p.index + h].p;
 }
@@ -152,25 +155,23 @@ void set_hash(ptr p, ptr k, ptr v) {
     push_root(&v);
     ASSERT(p.type == T_HASHTABLE);
     ptr l = hashtable_at(p, hash(k));
+    push_root(&l);
     for (ptr c = l; !eq(c, nil); c = cons_cdr(c)) {
+        push_root(&c);
         ptr h = cons_car(c);
+        push_root(&h);
         if (eq(cons_car(h), k)) {
             cons_setcdr(h, v);
-            pop_root();
-            pop_root();
-            pop_root();
+            pop_root_n(6);
             return;
         }
+        pop_root_n(2);
     }
     ptr pair = nil;
     push_root(&pair);
     pair = cons(k, v);
-    ptr c = cons(pair, p);
-    memory[p.index + hash(k)].p = c;
-    pop_root();
-    pop_root();
-    pop_root();
-    pop_root();
+    memory[p.index + hash(k)].p = cons(pair, l);
+    pop_root_n(5);
 }
 
 ptr proc_formals(ptr p) {

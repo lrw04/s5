@@ -3,7 +3,7 @@
 
 #include "lisp.h"
 
-// #define ALWAYS_GC
+#define ALWAYS_GC
 
 void gc_init();
 
@@ -17,5 +17,8 @@ extern ptr **root_stack;
 extern ll root_size, root_sp;
 void push_root(ptr *p);
 void pop_root();
+void pop_root_n(ll n);
+
+extern ll memory_size;
 
 #endif

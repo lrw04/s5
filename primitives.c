@@ -44,8 +44,7 @@ ptr p_cons(ptr a, ptr r) {
     push_root(&r);
     ASSERT(list_length(a) == 2);
     ptr p = cons(cons_car(a), cons_car(cons_cdr(a)));
-    pop_root();
-    pop_root();
+    pop_root_n(2);
     return p;
 }
 
@@ -90,8 +89,7 @@ ptr p_symbol_to_string(ptr a, ptr r) {
         vector_set(v, i, make_char(obarray[u].path));
         u = obarray[u].father;
     }
-    pop_root();
-    pop_root();
+    pop_root_n(2);
     return v;
 }
 
@@ -149,9 +147,7 @@ ptr p_make_vector(ptr a, ptr r) {
     push_root(&p);
     p = make_vector(k);
     for (ll i = 0; i < k; i++) vector_set(p, i, v);
-    pop_root();
-    pop_root();
-    pop_root();
+    pop_root_n(3);
     return p;
 }
 
@@ -189,7 +185,6 @@ ptr make_initial_environment() {
         set_hash(f, INTERN(prim_name[i]), make_primitive(i));
     }
     e = make_env(f, nil);
-    pop_root();
-    pop_root();
+    pop_root_n(2);
     return e;
 }

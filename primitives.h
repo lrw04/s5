@@ -36,7 +36,7 @@ const static char *prim_name[] = {
     "cdr",           "set-car!",       "set-cdr!",       "null?",
     "symbol?",       "symbol->string", "string->symbol", "char?",
     "char->integer", "integer->char",  "vector?",        "make-vector",
-    "vector-length", "vector-ref", "vector-set!"};
+    "vector-length", "vector-ref",     "vector-set!"};
 const static primitive_t prim_f[] = {p_eq,
                                      p_number,
                                      p_integer,

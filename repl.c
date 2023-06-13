@@ -14,15 +14,19 @@ int main(int argc, char **argv) {
     bool repl = !strcmp(prog, "-");
     obarray_init();
     gc_init();
-    ptr env = make_initial_environment();
+    ptr env = nil;
     push_root(&env);
+    env = make_initial_environment();
 
     FILE *std = fopen(stdlib, "r");
     while (true) {
         ptr p = nil;
         push_root(&p);
         p = read(make_input_port(std));
-        if (eq(p, eof)) break;
+        if (eq(p, eof)) {
+            pop_root();
+            break;
+        }
         eval(p, env);
         pop_root();
     }
@@ -39,6 +43,7 @@ int main(int argc, char **argv) {
             p = eval(p, env);
             print(p, make_output_port(stdout));
             printf("\n");
+            // printf("%lld %lld\n", root_sp, memory_size);
             pop_root();
         }
         printf("\n");

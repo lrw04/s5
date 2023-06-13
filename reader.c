@@ -31,8 +31,7 @@ ptr read_cdr(ptr p) {
     car = read(p);
     cdr = read_cdr(p);
     ptr l = cons(car, cdr);
-    pop_root();
-    pop_root();
+    pop_root_n(2);
     return l;
 }
 
@@ -71,8 +70,7 @@ ptr read(ptr p) {
             ptr v = nil;
             push_root(&v);
             v = cons(INTERN("vector"), l);
-            pop_root();
-            pop_root();
+            pop_root_n(2);
             return v;
         } else if (c == 't') {
             return make_bool(true);
@@ -95,8 +93,7 @@ ptr read(ptr p) {
         ptr text_l = cons(text, nil);
         push_root(&text_l);
         ptr quotation = cons(INTERN("quote"), text_l);
-        pop_root();
-        pop_root();
+        pop_root_n(2);
         return quotation;
     } else if (c == '`') {
         ptr text = nil;
@@ -105,8 +102,7 @@ ptr read(ptr p) {
         ptr text_l = cons(text, nil);
         push_root(&text_l);
         ptr quotation = cons(INTERN("quasiquote"), text_l);
-        pop_root();
-        pop_root();
+        pop_root_n(2);
         return quotation;
     } else if (c == ',') {
         c = fgetc(p.port);
@@ -118,8 +114,7 @@ ptr read(ptr p) {
             ptr text_l = cons(text, nil);
             push_root(&text_l);
             ptr quotation = cons(INTERN("unquote"), text_l);
-            pop_root();
-            pop_root();
+            pop_root_n(2);
             return quotation;
         }
         ptr text = nil;
@@ -128,8 +123,7 @@ ptr read(ptr p) {
         ptr text_l = cons(text, nil);
         push_root(&text_l);
         ptr quotation = cons(INTERN("unquote-splicing"), text_l);
-        pop_root();
-        pop_root();
+        pop_root_n(2);
         return quotation;
     } else if (c == '\"') {
         static char buf[BUFFER_SIZE];

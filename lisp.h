@@ -10,7 +10,7 @@ typedef int64_t ll;
 typedef long double ld;
 typedef uint8_t byte;
 
-#define HASHTABLE_P 10007
+#define HASHTABLE_P 3
 
 enum val_type {
     T_NUMBER,
@@ -92,7 +92,7 @@ ptr cons_cdr(ptr p);
 void cons_setcar(ptr p, ptr car);
 void cons_setcdr(ptr p, ptr cdr);
 
-ptr hashtable_at(ptr p, int h);
+ptr hashtable_at(ptr p, ll h);
 ptr get_hash(ptr p, ptr k);
 void set_hash(ptr p, ptr k, ptr v);
 
