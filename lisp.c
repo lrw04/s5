@@ -170,8 +170,11 @@ void set_hash(ptr p, ptr k, ptr v) {
     ptr pair = nil;
     push_root(&pair);
     pair = cons(k, v);
-    memory[p.index + hash(k)].p = cons(pair, l);
-    pop_root_n(5);
+    ptr lst = nil;
+    push_root(&lst);
+    lst = cons(pair, l);
+    memory[p.index + hash(k)].p = lst;
+    pop_root_n(6);
 }
 
 ptr proc_formals(ptr p) {

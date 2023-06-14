@@ -7,7 +7,7 @@
 #define ASSERT(x)                                                             \
     do {                                                                      \
         if (!(x)) {                                                           \
-            fprintf(stderr, "%s at line %d: %s failed\n", __FILE__, __LINE__, \
+            fprintf(stderr, "%s:%d: %s failed\n", __FILE__, __LINE__, \
                     #x);                                                      \
             abort();                                                          \
         }                                                                     \

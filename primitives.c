@@ -4,96 +4,95 @@
 
 #include "gc.h"
 #include "obarray.h"
+#include "repl.h"
 #include "util.h"
 
-ptr p_eq(ptr a, ptr r) {
+ptr p_eq(ptr a) {
     ASSERT(list_length(a) == 2);
     return make_bool(eq(cons_car(a), cons_car(cons_cdr(a))));
 }
 
-ptr p_number(ptr a, ptr r) {
+ptr p_number(ptr a) {
     ASSERT(list_length(a) == 1);
     return make_bool(cons_car(a).type == T_NUMBER);
 }
 
 bool integerp(ld a) { return floorl(a) == a; }
 
-ptr p_integer(ptr a, ptr r) {
+ptr p_integer(ptr a) {
     ASSERT(list_length(a) == 1);
     return make_bool(cons_car(a).type == T_NUMBER &&
                      integerp(cons_car(a).number));
 }
 
-ptr p_not(ptr a, ptr r) {
+ptr p_not(ptr a) {
     ASSERT(list_length(a) == 1);
     return make_bool(eq(cons_car(a), make_bool(false)));
 }
 
-ptr p_boolean(ptr a, ptr r) {
+ptr p_boolean(ptr a) {
     ASSERT(list_length(a) == 1);
     return make_bool(cons_car(a).type == T_BOOL);
 }
 
-ptr p_pair(ptr a, ptr r) {
+ptr p_pair(ptr a) {
     ASSERT(list_length(a) == 1);
     return make_bool(cons_car(a).type == T_CONS);
 }
 
-ptr p_cons(ptr a, ptr r) {
+ptr p_cons(ptr a) {
     push_root(&a);
-    push_root(&r);
     ASSERT(list_length(a) == 2);
     ptr p = cons(cons_car(a), cons_car(cons_cdr(a)));
-    pop_root_n(2);
+    pop_root();
     return p;
 }
 
-ptr p_car(ptr a, ptr r) {
+ptr p_car(ptr a) {
     ASSERT(list_length(a) == 1);
     return cons_car(cons_car(a));
 }
 
-ptr p_cdr(ptr a, ptr r) {
+ptr p_cdr(ptr a) {
     ASSERT(list_length(a) == 1);
     return cons_cdr(cons_car(a));
 }
 
-ptr p_set_car(ptr a, ptr r) {
+ptr p_set_car(ptr a) {
     cons_setcar(cons_car(a), cons_car(cons_cdr(a)));
     return INTERN("set-car!");
 }
 
-ptr p_set_cdr(ptr a, ptr r) {
+ptr p_set_cdr(ptr a) {
     cons_setcdr(cons_car(a), cons_car(cons_cdr(a)));
     return INTERN("set-cdr!");
 }
 
-ptr p_null(ptr a, ptr r) {
+ptr p_null(ptr a) {
     ASSERT(list_length(a) == 1);
     return make_bool(cons_car(a).type == T_NIL);
 }
 
-ptr p_symbol(ptr a, ptr r) {
+ptr p_symbol(ptr a) {
     ASSERT(list_length(a) == 1);
     return make_bool(cons_car(a).type == T_SYMBOL);
 }
 
-ptr p_symbol_to_string(ptr a, ptr r) {
+ptr p_symbol_to_string(ptr a) {
     ASSERT(list_length(a) == 1);
     ASSERT(cons_car(a).type == T_SYMBOL);
     push_root(&a);
-    push_root(&r);
     ll u = cons_car(a).index, n = obarray[u].depth;
     ptr v = make_vector(n);
     for (ll i = n - 1; i >= 0; i--) {
         vector_set(v, i, make_char(obarray[u].path));
         u = obarray[u].father;
     }
-    pop_root_n(2);
+    pop_root();
     return v;
 }
 
-ptr p_string_to_symbol(ptr a, ptr r) {
+ptr p_string_to_symbol(ptr a) {
     ASSERT(list_length(a) == 1);
     ASSERT(cons_car(a).type == T_VECTOR);
     ASSERT(vector_stringp(cons_car(a)));
@@ -109,19 +108,19 @@ ptr p_string_to_symbol(ptr a, ptr r) {
     return ret;
 }
 
-ptr p_char(ptr a, ptr r) {
+ptr p_char(ptr a) {
     ASSERT(list_length(a) == 1);
     return make_bool(cons_car(a).type == T_CHARACTER);
 }
 
-ptr p_char_to_integer(ptr a, ptr r) {
+ptr p_char_to_integer(ptr a) {
     ASSERT(list_length(a) == 1);
     ptr p = cons_car(a);
     ASSERT(p.type == T_CHARACTER);
     return make_number(p.character);
 }
 
-ptr p_integer_to_char(ptr a, ptr r) {
+ptr p_integer_to_char(ptr a) {
     ASSERT(list_length(a) == 1);
     ptr p = cons_car(a);
     ASSERT(p.type == T_NUMBER);
@@ -131,14 +130,13 @@ ptr p_integer_to_char(ptr a, ptr r) {
     return make_char(d);
 }
 
-ptr p_vector(ptr a, ptr r) {
+ptr p_vector(ptr a) {
     ASSERT(list_length(a) == 1);
     return make_bool(cons_car(a).type == T_VECTOR);
 }
 
-ptr p_make_vector(ptr a, ptr r) {
+ptr p_make_vector(ptr a) {
     push_root(&a);
-    push_root(&r);
     ASSERT(list_length(a) && list_length(a) <= 2);
     ASSERT(cons_car(a).type == T_NUMBER);
     ll k = cons_car(a).number;
@@ -147,17 +145,17 @@ ptr p_make_vector(ptr a, ptr r) {
     push_root(&p);
     p = make_vector(k);
     for (ll i = 0; i < k; i++) vector_set(p, i, v);
-    pop_root_n(3);
+    pop_root_n(2);
     return p;
 }
 
-ptr p_vector_length(ptr a, ptr r) {
+ptr p_vector_length(ptr a) {
     ASSERT(list_length(a) == 1);
     ASSERT(cons_car(a).type == T_VECTOR);
     return make_number(cons_car(a).size);
 }
 
-ptr p_vector_ref(ptr a, ptr r) {
+ptr p_vector_ref(ptr a) {
     ASSERT(list_length(a) == 2);
     ptr v = cons_car(a), k = cons_car(cons_cdr(a));
     ASSERT(v.type == T_VECTOR);
@@ -165,7 +163,7 @@ ptr p_vector_ref(ptr a, ptr r) {
     return vector_ref(v, k.number);
 }
 
-ptr p_vector_set(ptr a, ptr r) {
+ptr p_vector_set(ptr a) {
     ASSERT(list_length(a) == 3);
     ptr v = cons_car(a), k = cons_car(cons_cdr(a)),
         p = cons_car(cons_cdr(cons_cdr(a)));
@@ -173,6 +171,29 @@ ptr p_vector_set(ptr a, ptr r) {
     ASSERT(k.type == T_NUMBER);
     vector_set(v, k.number, p);
     return INTERN("vector-set!");
+}
+
+ptr p_gensym(ptr a) {
+    ASSERT(list_length(a) == 0);
+    static ll ind = 0;
+    static char buf[BUFSIZ];
+    snprintf(buf, BUFSIZ - 1, "gensym-%lld", ++ind);
+    return INTERN(buf);
+}
+
+ptr p_interaction_environment(ptr a) {
+    ASSERT(list_length(a) == 0);
+    return global_env;
+}
+
+ptr p_current_input_port(ptr a) {
+    ASSERT(list_length(a) == 0);
+    return cip;
+}
+
+ptr p_current_output_port(ptr a) {
+    ASSERT(list_length(a) == 0);
+    return cop;
 }
 
 ptr make_initial_environment() {

@@ -2,11 +2,10 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <stdio.h>
 
 #include "gc.h"
 #include "util.h"
-
-#define BUFFER_SIZE 128
 
 bool delim_p(int c) { return isspace(c) || c == '(' || c == ')'; }
 
@@ -45,11 +44,11 @@ ptr read(ptr p) {
     if (c == '#') {
         c = fgetc(p.port);
         if (c == '\\') {
-            static char buf[BUFFER_SIZE];
+            static char buf[BUFSIZ];
             int pt = 0;
             buf[pt++] = fgetc(p.port);
             while (!delim_p(c = fgetc(p.port))) {
-                if (pt >= BUFFER_SIZE - 1) ASSERT(false);
+                if (pt >= BUFSIZ - 1) ASSERT(false);
                 buf[pt++] = c;
             }
             ungetc(c, p.port);
@@ -126,7 +125,7 @@ ptr read(ptr p) {
         pop_root_n(2);
         return quotation;
     } else if (c == '\"') {
-        static char buf[BUFFER_SIZE];
+        static char buf[BUFSIZ];
         int pt = 0;
         while (true) {
             c = fgetc(p.port);
@@ -147,10 +146,10 @@ ptr read(ptr p) {
         return v;
     } else {
         ungetc(c, p.port);
-        static char buf[BUFFER_SIZE];
+        static char buf[BUFSIZ];
         int pt = 0;
         while (!delim_p(c = fgetc(p.port))) {
-            if (pt >= BUFFER_SIZE - 1) ASSERT(false);
+            if (pt >= BUFSIZ - 1) ASSERT(false);
             buf[pt++] = c;
         }
         buf[pt++] = 0;

@@ -1,3 +1,5 @@
+#include "repl.h"
+
 #include "eval.h"
 #include "gc.h"
 #include "obarray.h"
@@ -5,6 +7,8 @@
 #include "printer.h"
 #include "reader.h"
 #include "util.h"
+
+ptr global_env, cip, cop;
 
 // s5 stdlib.scm program.scm <args>
 // s5 stdlib.scm - <args>
@@ -14,11 +18,14 @@ int main(int argc, char **argv) {
     bool repl = !strcmp(prog, "-");
     obarray_init();
     gc_init();
-    ptr env = nil;
-    push_root(&env);
-    env = make_initial_environment();
+    global_env = nil;
+    cip = make_input_port(stdin);
+    cop = make_output_port(stdout);
+    push_root(&global_env);
+    global_env = make_initial_environment();
 
     FILE *std = fopen(stdlib, "r");
+    ASSERT(std);
     while (true) {
         ptr p = nil;
         push_root(&p);
@@ -27,7 +34,8 @@ int main(int argc, char **argv) {
             pop_root();
             break;
         }
-        eval(p, env);
+        eval(p, global_env);
+        // fprintf(stderr, "%lld %lld\n", root_sp, memory_size);
         pop_root();
     }
     fclose(std);
@@ -40,21 +48,22 @@ int main(int argc, char **argv) {
             push_root(&p);
             p = read(make_input_port(stdin));
             if (eq(p, eof)) break;
-            p = eval(p, env);
+            p = eval(p, global_env);
             print(p, make_output_port(stdout));
             printf("\n");
-            // printf("%lld %lld\n", root_sp, memory_size);
+            // fprintf(stderr, "%lld %lld\n", root_sp, memory_size);
             pop_root();
         }
         printf("\n");
     } else {
         FILE *p = fopen(prog, "r");
+        ASSERT(p);
         while (true) {
             ptr e = nil;
             push_root(&e);
             e = read(make_input_port(p));
             if (eq(e, eof)) break;
-            eval(e, env);
+            eval(e, global_env);
             pop_root();
         }
         fclose(p);
